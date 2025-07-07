@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @NotBlank
     private String location;

@@ -9,14 +9,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Builder
-@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Stock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @NotBlank
     @ManyToOne
@@ -24,7 +23,7 @@ public class Stock {
 
     @NotBlank
     @ManyToOne
-    private product product;
+    private Long product_id;
 
     @NotBlank
     private int quantity;
