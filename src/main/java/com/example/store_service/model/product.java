@@ -5,7 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-"rstock---->order-id,p-id,quantity"
+
 public class product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
