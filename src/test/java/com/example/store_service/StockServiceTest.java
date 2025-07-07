@@ -1,3 +1,4 @@
+// StockServiceTest.java
 package com.example.store_service;
 
 import com.example.store_service.dto.StockDto;
@@ -8,26 +9,24 @@ import com.example.store_service.repositry.StockHistoryRepository;
 import com.example.store_service.repositry.StockRepository;
 import com.example.store_service.repositry.StoreRepository;
 import com.example.store_service.service.StockService;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.mockito.Mockito.any;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class StockServiceTest {
-    @InjectMocks
-    private StockService stockService;
+class StockServiceTest {
 
     @Mock
     private StockRepository stockRepository;
@@ -38,60 +37,121 @@ public class StockServiceTest {
     @Mock
     private StockHistoryRepository stockHistoryRepository;
 
+    @InjectMocks
+    private StockService stockService;
+
+    private Store testStore;
+    private Stock testStock;
+    private StockDto testStockDto;
+
     @BeforeEach
-    public void setup() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
+        testStore = new Store();
+        testStore.setId(1L);
+        testStore.setLocation("Test Location");
+
+        testStock = Stock.builder()
+                .id(1L)
+                .store(testStore)
+                .product_id(100L)
+                .quantity(50)
+                .build();
+
+        testStockDto = new StockDto();
+        testStockDto.setStoreId(1L);
+        testStockDto.setProductId(100L);
+        testStockDto.setQuantity(10);
+        testStockDto.setReason("Test Reason");
     }
 
     @Test
-    public void testAddStock_success() {
-        StockDto dto = new StockDto(1, 2, 10, "Restock");
-        Store store = new Store();
-        Stock stock = new Stock();
-        stock.setQuantity(5);
+    void addStock_Success() {
+        // Arrange
+        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.of(testStock));
+        when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
+        when(stockHistoryRepository.save(any(StockHistory.class))).thenReturn(new StockHistory());
 
-        when(storeRepository.findById(1)).thenReturn(Optional.of(store));
-        when(stockRepository.findByStoreAndProductId(store, 2)).thenReturn(Optional.of(stock));
+        // Act
+        stockService.addStock(testStockDto);
 
-        stockService.addStock(dto);
-
-        assertEquals(15, stock.getQuantity());
-        verify(stockRepository).save(stock);
+        // Assert
+        verify(storeRepository).findById(1);
+        verify(stockRepository).findByStoreAndProductId(testStore, 100L);
+        verify(stockRepository).save(testStock);
         verify(stockHistoryRepository).save(any(StockHistory.class));
+        assertEquals(60, testStock.getQuantity()); // 50 + 10
     }
 
     @Test
-    public void testConsumeStock_success() {
-        StockDto dto = new StockDto(1, 2, 5, "Order");
-        Store store = new Store();
-        Stock stock = new Stock();
-        stock.setQuantity(10);
+    void addStock_StoreNotFound() {
+        // Arrange
+        when(storeRepository.findById(anyInt())).thenReturn(Optional.empty());
 
-        when(storeRepository.findById(1)).thenReturn(Optional.of(store));
-        when(stockRepository.findByStoreAndProductId(store, 2)).thenReturn(Optional.of(stock));
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> stockService.addStock(testStockDto));
+        verify(stockRepository, never()).save(any(Stock.class));
+        verify(stockHistoryRepository, never()).save(any(StockHistory.class));
+    }
 
-        stockService.consumeStock(dto);
+    @Test
+    void addStock_StockNotFound() {
+        // Arrange
+        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.empty());
 
-        assertEquals(5, stock.getQuantity());
-        verify(stockRepository).save(stock);
+        // Act & Assert
+        assertThrows(EntityNotFoundException.class, () -> stockService.addStock(testStockDto));
+        verify(stockRepository, never()).save(any(Stock.class));
+        verify(stockHistoryRepository, never()).save(any(StockHistory.class));
+    }
+
+
+    @Test
+    void consumeStock_Success() {
+        // Arrange
+        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.of(testStock));
+        when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
+        when(stockHistoryRepository.save(any(StockHistory.class))).thenReturn(new StockHistory());
+
+        // Act
+        stockService.consumeStock(testStockDto);
+
+        // Assert
+        verify(storeRepository).findById(1);
+        verify(stockRepository).findByStoreAndProductId(testStore, 100L);
+        verify(stockRepository).save(testStock);
         verify(stockHistoryRepository).save(any(StockHistory.class));
+        assertEquals(40, testStock.getQuantity()); // 50 - 10
     }
 
     @Test
-    public void testConsumeStock_insufficientQuantity_throwsException() {
-        StockDto dto = new StockDto(1, 2, 15, "Order");
-        Store store = new Store();
-        store.setId(1);
-        Stock stock = new Stock();
-        stock.setQuantity(5);
+    void consumeStock_NotEnoughStock() {
+        // Arrange
+        testStockDto.setQuantity(60); // More than available (50)
+        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.of(testStock));
 
-        when(storeRepository.findById(store.getId())).thenReturn(Optional.of(store));
-        when(stockRepository.findByStoreAndProductId(store, 2)).thenReturn(Optional.of(stock));
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> stockService.consumeStock(testStockDto));
+        assertEquals("Not enough stock", exception.getMessage());
+        verify(stockRepository, never()).save(any(Stock.class));
+        verify(stockHistoryRepository, never()).save(any(StockHistory.class));
+    }
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-            stockService.consumeStock(dto);
-        });
+    @Test
+    void consumeStock_StockNotFound() {
+        // Arrange
+        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.empty());
 
-        assertEquals("Not enough stock", ex.getMessage());
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> stockService.consumeStock(testStockDto));
+        assertEquals("Stock not found", exception.getMessage());
+        verify(stockRepository, never()).save(any(Stock.class));
+        verify(stockHistoryRepository, never()).save(any(StockHistory.class));
     }
 }

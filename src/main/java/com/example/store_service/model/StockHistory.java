@@ -17,7 +17,7 @@ public class StockHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
 //    private Product product;
 

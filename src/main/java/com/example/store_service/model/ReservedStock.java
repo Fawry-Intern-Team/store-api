@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReservedStock {
     @Id
-    private long order_id;
-    private long product_id;
+    private Long id;
+
+    private Long order_id;
+    private Long product_id;
     private int quantity;
 }

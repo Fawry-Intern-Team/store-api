@@ -5,14 +5,19 @@ import com.example.store_service.repositry.StoreRepository;
 import com.example.store_service.service.StoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 public class StoreServiceTest {
     @Mock
     private StoreRepository storeRepository;
@@ -20,22 +25,27 @@ public class StoreServiceTest {
     @InjectMocks
     private StoreService storeService;
 
+    private Store testStore;
+
     @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
+        testStore = new Store();
+        testStore.setId(1L);
+        testStore.setLocation("Test Location");
     }
 
     @Test
-    public void testCreateStore() {
-        Store store = new Store();
-        store.setId(1);
-        store.setLocation("cairo");
+    void createStore_Success() {
+        // Arrange
+        when(storeRepository.save(any(Store.class))).thenReturn(testStore);
 
-        when(storeRepository.save(store)).thenReturn(store);
+        // Act
+        Store result = storeService.createStore(testStore);
 
-        Store result = storeService.createStore(store);
-
-        assertEquals("cairo", result.getLocation());
-        verify(storeRepository).save(store);
+        // Assert
+        assertNotNull(result);
+        assertEquals("Test Location", result.getLocation());
+        assertEquals(1L, result.getId());
+        verify(storeRepository).save(testStore);
     }
 }

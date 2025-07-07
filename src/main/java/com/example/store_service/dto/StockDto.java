@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockDto {
-    private int storeId;
-    private int productId;
+    private Long storeId;
+    private Long productId;
     private int quantity;
     private String Reason;
 }
