@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Objects;
-
+@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

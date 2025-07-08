@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ReservedStockRepository extends JpaRepository<ReservedStock,Integer> {
     List<ReservedStock> findByOrderId(Long orderId);
-    void deleteByOrderId(Long orderId);
+
+
 }

@@ -2,13 +2,14 @@ package com.example.store_service.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
+@Entity
 @Builder
 @Data
 @AllArgsConstructor
@@ -19,21 +20,17 @@ public class StockHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    private Product product;
-
-    @NotBlank
+    @NotNull(message = "Store is required")
     @ManyToOne(optional = false)
-    @JoinColumn(name ="store_id")
+    @JoinColumn(name = "store_id")
     private Store store;
 
-    @NotBlank
+    // Consider allowing negative values for decrease
     private int quantityChange;
 
-    @NotBlank
+    @NotBlank(message = "Reason is required")
     private String reason;
 
-    @NotBlank
+    @NotNull(message = "Timestamp is required")
     private LocalDateTime timestamp;
-
-
 }

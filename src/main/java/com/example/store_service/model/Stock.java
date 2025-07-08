@@ -2,12 +2,14 @@ package com.example.store_service.model;
 
 import brave.internal.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+@Entity
 @Builder
 @Data
 @AllArgsConstructor
@@ -17,14 +19,13 @@ public class Stock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotNull(message = "Store is required")
     @ManyToOne
     private Store store;
 
-    @NotBlank
-    @ManyToOne
-    private Long product_id;
+    @NotNull(message = "Product ID is required")
+    private Long productId;
 
-    @NotBlank
+    @Min(value = 0, message = "Quantity must be zero or more")
     private int quantity;
 }

@@ -33,7 +33,7 @@ public class ReservedStockService {
             reservedStockRepository.saveAll(reservedStocks);
             log.info("Successfully reserved stock for orderId: {} with {} items",
                     orderId, reservedStocks.size());
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to reserve stock for orderId: {}. Error: {}",
                     orderId, e.getMessage(), e);
             throw e;
@@ -56,9 +56,9 @@ public class ReservedStockService {
 
             for (ReservedStock reserved : reservedList) {
                 log.debug("Rolling back stock - ProductId: {}, Quantity: {}",
-                        reserved.getProduct_id(), reserved.getQuantity());
+                        reserved.getProductId(), reserved.getQuantity());
 
-                stockRepository.findByProductId(reserved.getProduct_id()).ifPresent(stock -> {
+                stockRepository.findByProductId(reserved.getProductId()).ifPresent(stock -> {
                     int oldQuantity = stock.getQuantity();
                     int newQuantity = oldQuantity + reserved.getQuantity();
 
@@ -66,11 +66,12 @@ public class ReservedStockService {
                     stockRepository.save(stock);
 
                     log.debug("Stock updated for ProductId: {} - Old quantity: {}, New quantity: {}",
-                            reserved.getProduct_id(), oldQuantity, newQuantity);
+                            reserved.getProductId(), oldQuantity, newQuantity);
                 });
+
             }
 
-            reservedStockRepository.deleteByOrderId(orderId);
+            reservedStockRepository.deleteAll(reservedList);
 
             log.info("Successfully rolled back stock for orderId: {} with {} items",
                     orderId, reservedList.size());
