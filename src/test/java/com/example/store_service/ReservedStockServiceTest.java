@@ -1,26 +1,24 @@
 package com.example.store_service;
 
-
 import com.example.store_service.model.ReservedStock;
 import com.example.store_service.model.Stock;
 import com.example.store_service.model.Store;
 import com.example.store_service.repositry.ReservedStockRepository;
 import com.example.store_service.repositry.StockRepository;
 import com.example.store_service.service.ReservedStockService;
-import org.junit.jupiter.api.BeforeEach;
+import org.example.events.OrderCreatedEvent;
+import org.example.events.OrderItemDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,80 +33,165 @@ class ReservedStockServiceTest {
     @InjectMocks
     private ReservedStockService reservedStockService;
 
-    private List<ReservedStock> testReservedStocks;
-    private Stock testStock;
-    private Long testOrderId;
+    private final Long orderId = 1L;
 
-    @BeforeEach
-    void setUp() {
-        testOrderId = 1L;
+    @Test
+    void reserveStock_shouldReserveSuccessfully() {
+        // Arrange
+        Long storeId = 10L;
+        Long productId = 20L;
+        int quantity = 5;
 
-        ReservedStock reservedStock1 = new ReservedStock();
-        reservedStock1.setId(1L);
-        reservedStock1.setOrder_id(testOrderId);
-        reservedStock1.setProduct_id(100L);
-        reservedStock1.setQuantity(5);
-
-        ReservedStock reservedStock2 = new ReservedStock();
-        reservedStock2.setId(2L);
-        reservedStock2.setOrder_id(testOrderId);
-        reservedStock2.setProduct_id(200L);
-        reservedStock2.setQuantity(3);
-
-        testReservedStocks = Arrays.asList(reservedStock1, reservedStock2);
-
-        testStock = Stock.builder()
-                .id(1L)
-                .store(new Store())
-                .product_id(100L)
-                .quantity(20)
+        Stock stock = Stock.builder()
+                .storeId(storeId)
+                .productId(productId)
+                .quantity(10)
                 .build();
+
+        OrderItemDTO item = OrderItemDTO.builder()
+                .storeId(storeId)
+                .productId(productId)
+                .quantity(quantity)
+                .build();
+
+        OrderCreatedEvent event = OrderCreatedEvent.builder()
+                .orderId(orderId)
+                .items(List.of(item))
+                .build();
+
+        when(stockRepository.findByStoreIdAndProductId(storeId, productId)).thenReturn(Optional.of(stock));
+
+        // Act
+        reservedStockService.reserveStock(event);
+
+        // Assert
+        verify(reservedStockRepository).save(any(ReservedStock.class));
+        verify(stockRepository).save(argThat(s -> s.getQuantity() == 5));
     }
 
     @Test
-    void reserveStock_Success() {
+    void reserveStock_shouldThrowIfStockNotFound() {
         // Arrange
-        when(reservedStockRepository.saveAll(testReservedStocks)).thenReturn(testReservedStocks);
+        Long storeId = 1L;
+        Long productId = 2L;
 
-        // Act
-        reservedStockService.reserveStock(testOrderId, testReservedStocks);
+        OrderItemDTO item = OrderItemDTO.builder()
+                .storeId(storeId)
+                .productId(productId)
+                .quantity(1)
+                .build();
 
-        // Assert
-        verify(reservedStockRepository).saveAll(testReservedStocks);
+        OrderCreatedEvent event = OrderCreatedEvent.builder()
+                .orderId(100L)
+                .items(List.of(item))
+                .build();
+
+        when(stockRepository.findByStoreIdAndProductId(storeId, productId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> reservedStockService.reserveStock(event));
+        assertTrue(thrown.getMessage().contains("Stock not found for productId"));
     }
 
     @Test
-    void rollbackStock_Success() {
+    void reserveStock_shouldThrowIfInsufficientStock() {
         // Arrange
-        when(reservedStockRepository.findByOrderId(testOrderId)).thenReturn(testReservedStocks);
-        when(stockRepository.findByProductId(100L)).thenReturn(Optional.of(testStock));
-        when(stockRepository.findByProductId(200L)).thenReturn(Optional.empty());
-        when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
+        Long storeId = 1L;
+        Long productId = 2L;
 
-        // Act
-        reservedStockService.rollbackStock(testOrderId);
+        Stock stock = Stock.builder()
+                .storeId(storeId)
+                .productId(productId)
+                .quantity(3)
+                .build();
 
-        // Assert
-        verify(reservedStockRepository).findByOrderId(testOrderId);
-        verify(stockRepository).findByProductId(100L);
-        verify(stockRepository).findByProductId(200L);
-        verify(stockRepository).save(testStock);
-        verify(reservedStockRepository).deleteByOrderId(testOrderId);
-        assertEquals(25, testStock.getQuantity()); // 20 + 5
+        OrderItemDTO item = OrderItemDTO.builder()
+                .storeId(storeId)
+                .productId(productId)
+                .quantity(5)
+                .build();
+
+        OrderCreatedEvent event = OrderCreatedEvent.builder()
+                .orderId(200L)
+                .items(List.of(item))
+                .build();
+
+        when(stockRepository.findByStoreIdAndProductId(storeId, productId)).thenReturn(Optional.of(stock));
+
+        // Act & Assert
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> reservedStockService.reserveStock(event));
+        assertTrue(thrown.getMessage().contains("Insufficient stock"));
     }
 
     @Test
-    void rollbackStock_EmptyReservedList() {
+    void rollbackStock_shouldRestoreStockAndDeleteReserved() {
         // Arrange
-        when(reservedStockRepository.findByOrderId(testOrderId)).thenReturn(Arrays.asList());
+        Long orderId = 1L;
+        Long productId = 100L;
+
+        ReservedStock reservedStock = ReservedStock.builder()
+                .orderId(orderId)
+                .productId(productId)
+                .quantity(3)
+                .build();
+
+        Stock stock = Stock.builder()
+                .productId(productId)
+                .quantity(5)
+                .build();
+
+        when(reservedStockRepository.findByOrderId(orderId)).thenReturn(List.of(reservedStock));
+        when(stockRepository.findByProductId(productId)).thenReturn(Optional.of(stock));
 
         // Act
-        reservedStockService.rollbackStock(testOrderId);
+        reservedStockService.rollbackStock(orderId);
 
         // Assert
-        verify(reservedStockRepository).findByOrderId(testOrderId);
-        verify(stockRepository, never()).findByProductId(anyLong());
-        verify(stockRepository, never()).save(any(Stock.class));
-        verify(reservedStockRepository).deleteByOrderId(testOrderId);
+        verify(stockRepository).save(argThat(updatedStock ->
+                updatedStock.getProductId().equals(productId) &&
+                        updatedStock.getQuantity() == 8
+        ));
+
+        // 2. ReservedStock deleted
+        verify(reservedStockRepository).deleteAll(List.of(reservedStock));
+    }
+
+    @Test
+    void rollbackStock_shouldSkipIfNoReservedStock() {
+        // Arrange
+        Long orderId = 2L;
+
+        when(reservedStockRepository.findByOrderId(orderId)).thenReturn(Collections.emptyList());
+
+        // Act
+        reservedStockService.rollbackStock(orderId);
+
+        // Assert
+        verify(stockRepository, never()).save(any());
+        verify(reservedStockRepository, never()).deleteAll(any());
+    }
+
+    @Test
+    void rollbackStock_shouldHandleMissingStock() {
+        // Arrange
+        Long orderId = 3L;
+        Long productId = 200L;
+
+        ReservedStock reservedStock = ReservedStock.builder()
+                .orderId(orderId)
+                .productId(productId)
+                .quantity(5)
+                .build();
+
+        when(reservedStockRepository.findByOrderId(orderId)).thenReturn(List.of(reservedStock));
+        when(stockRepository.findByProductId(productId)).thenReturn(Optional.empty());
+
+        // Act
+        reservedStockService.rollbackStock(orderId);
+
+        // Assert
+        verify(stockRepository, never()).save(any());
+        verify(reservedStockRepository).deleteAll(List.of(reservedStock));
     }
 }

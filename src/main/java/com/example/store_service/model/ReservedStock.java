@@ -18,6 +18,7 @@ public class ReservedStock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long storeId;
     private Long orderId;
     private Long productId;
     private int quantity;

@@ -20,8 +20,7 @@ public class Stock {
     private Long id;
 
     @NotNull(message = "Store is required")
-    @ManyToOne
-    private Store store;
+    private Long storeId;
 
     @NotNull(message = "Product ID is required")
     private Long productId;

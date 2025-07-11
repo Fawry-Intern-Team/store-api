@@ -36,7 +36,7 @@ public class StoreService {
 
             Store savedStore = storeRepository.save(store);
 
-            log.info("Successfully created store with ID: {} -, Location: {}",
+            log.info("Successfully created store with ID: {} , Location: {}",
                     savedStore.getId(), savedStore.getLocation());
 
             return savedStore;

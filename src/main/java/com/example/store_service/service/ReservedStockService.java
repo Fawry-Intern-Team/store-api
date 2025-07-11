@@ -1,6 +1,7 @@
 package com.example.store_service.service;
 
 import com.example.store_service.dto.StockDto;
+
 import com.example.store_service.model.ReservedStock;
 import com.example.store_service.model.Stock;
 import com.example.store_service.model.StockHistory;
@@ -8,9 +9,12 @@ import com.example.store_service.model.Store;
 import com.example.store_service.repositry.ReservedStockRepository;
 import com.example.store_service.repositry.StockRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.example.events.OrderCreatedEvent;
+import org.example.events.OrderItemDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -27,18 +31,39 @@ public class ReservedStockService {
         log.info("ReservedStockService initialized");
     }
 
-    public void reserveStock(Long orderId, List<ReservedStock> reservedStocks) {
-        log.info("Starting stock reservation for orderId: {}", orderId);
+
+    public void reserveStock(OrderCreatedEvent orderCreatedEvent) {
+        log.info("Starting stock reservation for orderId: {}", orderCreatedEvent.getOrderId());
         try {
-            reservedStockRepository.saveAll(reservedStocks);
-            log.info("Successfully reserved stock for orderId: {} with {} items",
-                    orderId, reservedStocks.size());
+            for (OrderItemDTO reserved : orderCreatedEvent.getItems()) {
+                Stock stock = stockRepository.findByStoreIdAndProductId(
+                        reserved.getStoreId(), reserved.getProductId()
+                ).orElseThrow(() -> new RuntimeException("Stock not found for productId " + reserved.getProductId()));
+
+                if (stock.getQuantity() < reserved.getQuantity()) {
+                    throw new IllegalArgumentException("Insufficient stock for productId " + reserved.getProductId());
+                }
+                ReservedStock reservedStock = ReservedStock.builder()
+                        .orderId(orderCreatedEvent.getOrderId())
+                        .storeId(reserved.getStoreId())
+                        .productId(reserved.getProductId())
+                        .quantity(reserved.getQuantity())
+                        .build();
+
+                reservedStockRepository.save(reservedStock);
+
+                stock.setQuantity(stock.getQuantity() - reserved.getQuantity());
+
+                stockRepository.save(stock);
+            }
+
+            log.info("Successfully reserved and consumed stock for orderId: {} with {} items",
+                    orderCreatedEvent.getOrderId(), orderCreatedEvent.getItems().size());
+
         } catch (Exception e) {
-            log.error("Failed to reserve stock for orderId: {}. Error: {}",
-                    orderId, e.getMessage(), e);
+            log.error("Failed to reserve/consume stock for orderId: {}. Error: {}", orderCreatedEvent.getOrderId(), e.getMessage(), e);
             throw e;
         }
-
     }
 
     public void rollbackStock(Long orderId) {

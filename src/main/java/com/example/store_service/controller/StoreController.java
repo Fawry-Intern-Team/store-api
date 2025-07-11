@@ -19,6 +19,7 @@ public class StoreController {
     public StoreController(StoreService storeService) {
         this.storeService = storeService;
     }
+
     @PostMapping("/create")
     public ResponseEntity<Store> createStore(@RequestBody @Valid @RequestHeader(value = "X-API-Version", defaultValue = "v1") Store store){
         return ResponseEntity.ok(storeService.createStore(store));

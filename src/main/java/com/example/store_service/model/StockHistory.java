@@ -28,7 +28,6 @@ public class StockHistory {
     // Consider allowing negative values for decrease
     private int quantityChange;
 
-    @NotBlank(message = "Reason is required")
     private String reason;
 
     @NotNull(message = "Timestamp is required")

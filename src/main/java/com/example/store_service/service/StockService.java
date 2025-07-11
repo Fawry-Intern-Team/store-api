@@ -1,6 +1,7 @@
 package com.example.store_service.service;
 
 import com.example.store_service.dto.StockDto;
+import com.example.store_service.mapper.StockMapper;
 import com.example.store_service.model.Stock;
 import com.example.store_service.model.StockHistory;
 import com.example.store_service.model.Store;
@@ -13,11 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class StockService {
-
+    @Autowired
+    private StockMapper stockMapper;
 
     private final StockRepository stockRepository;
     private final StoreRepository storeRepository;
@@ -32,6 +36,36 @@ public class StockService {
         this.stockHistoryRepository = stockHistoryRepository;
     }
 
+    public void createStock(StockDto stockDto) {
+        try {
+            log.info("Starting stock creation - StoreId: {}, ProductId: {}, Quantity: {}",
+                    stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity());
+
+            Store store = storeRepository.findById(Math.toIntExact(stockDto.getStoreId())).orElseThrow();
+            Optional<Stock> stock1 = stockRepository.findByStoreIdAndProductId(stockDto.getStoreId(), stockDto.getProductId());
+            if(stock1.isPresent()){
+                throw new RuntimeException("Stock Is Already Created");
+            }
+            Stock stock = stockMapper.toEntity(stockDto);
+            stockRepository.save(stock);
+
+            log.debug("Stock created successfully");
+            stockHistoryRepository.save(
+                    StockHistory.builder()
+                            .store(store)
+                            .quantityChange(stock.getQuantity())
+                            .timestamp(LocalDateTime.now())
+                            .build()
+            );
+
+        }catch (Exception e){
+            log.error("Failed to create stock - StoreId: {}, ProductId: {}, Quantity: {}. Error: {}",
+                    stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity(),
+                    e.getMessage(), e);
+            throw e;
+        }
+    }
+
     public void addStock(StockDto stockDto) {
         try {
             log.info("Starting stock addition - StoreId: {}, ProductId: {}, Quantity: {}",
@@ -39,7 +73,7 @@ public class StockService {
 
             Store store = storeRepository.findById(Math.toIntExact(stockDto.getStoreId())).orElseThrow();
 
-            Stock stock1 = stockRepository.findByStoreAndProductId(store, stockDto.getProductId())
+            Stock stock1 = stockRepository.findByStoreIdAndProductId(stockDto.getStoreId(), stockDto.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("Stock not found for given store and product."));
 
             stock1.setQuantity(stock1.getQuantity() + stockDto.getQuantity());
@@ -70,7 +104,7 @@ public class StockService {
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity());
             Store store = storeRepository.findById(Math.toIntExact(stockDto.getStoreId())).orElseThrow();
 
-            Stock stock = stockRepository.findByStoreAndProductId(store, stockDto.getProductId())
+            Stock stock = stockRepository.findByStoreIdAndProductId(stockDto.getStoreId(), stockDto.getProductId())
                     .orElseThrow(() -> new RuntimeException("Stock not found"));
 
             if (stock.getQuantity() < stockDto.getQuantity())
@@ -84,7 +118,7 @@ public class StockService {
             stockHistoryRepository.save(
                     StockHistory.builder()
                             .store(store)
-                            .quantityChange(stockDto.getQuantity())
+                            .quantityChange(-stockDto.getQuantity())
                             .reason(stockDto.getReason())
                             .timestamp(LocalDateTime.now())
                             .build()

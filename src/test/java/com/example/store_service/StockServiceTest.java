@@ -52,8 +52,8 @@ class StockServiceTest {
 
         testStock = Stock.builder()
                 .id(1L)
-                .store(testStore)
-                .product_id(100L)
+                .storeId(testStore.getId())
+                .productId(100L)
                 .quantity(50)
                 .build();
 
@@ -68,7 +68,7 @@ class StockServiceTest {
     void addStock_Success() {
         // Arrange
         when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.of(testStock));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.of(testStock));
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
         when(stockHistoryRepository.save(any(StockHistory.class))).thenReturn(new StockHistory());
 
@@ -77,10 +77,10 @@ class StockServiceTest {
 
         // Assert
         verify(storeRepository).findById(1);
-        verify(stockRepository).findByStoreAndProductId(testStore, 100L);
+        verify(stockRepository).findByStoreIdAndProductId(testStore.getId(), 100L);
         verify(stockRepository).save(testStock);
         verify(stockHistoryRepository).save(any(StockHistory.class));
-        assertEquals(60, testStock.getQuantity()); // 50 + 10
+        assertEquals(60, testStock.getQuantity());
     }
 
     @Test
@@ -98,7 +98,7 @@ class StockServiceTest {
     void addStock_StockNotFound() {
         // Arrange
         when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.empty());
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> stockService.addStock(testStockDto));
@@ -111,7 +111,7 @@ class StockServiceTest {
     void consumeStock_Success() {
         // Arrange
         when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.of(testStock));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.of(testStock));
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
         when(stockHistoryRepository.save(any(StockHistory.class))).thenReturn(new StockHistory());
 
@@ -120,7 +120,7 @@ class StockServiceTest {
 
         // Assert
         verify(storeRepository).findById(1);
-        verify(stockRepository).findByStoreAndProductId(testStore, 100L);
+        verify(stockRepository).findByStoreIdAndProductId(testStore.getId(), 100L);
         verify(stockRepository).save(testStock);
         verify(stockHistoryRepository).save(any(StockHistory.class));
         assertEquals(40, testStock.getQuantity()); // 50 - 10
@@ -131,7 +131,7 @@ class StockServiceTest {
         // Arrange
         testStockDto.setQuantity(60); // More than available (50)
         when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.of(testStock));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.of(testStock));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class,
@@ -145,7 +145,7 @@ class StockServiceTest {
     void consumeStock_StockNotFound() {
         // Arrange
         when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreAndProductId(testStore, 100L)).thenReturn(Optional.empty());
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class,

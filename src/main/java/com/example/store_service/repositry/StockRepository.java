@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface StockRepository extends JpaRepository<Stock,Integer> {
-    Optional<Stock> findByStoreAndProductId(Store store, Long productId);
+public interface StockRepository extends JpaRepository<Stock,Long> {
+    Optional<Stock> findByStoreIdAndProductId(Long storeId, Long productId);
 
     Optional<Stock> findByProductId(Long productId);
 }
