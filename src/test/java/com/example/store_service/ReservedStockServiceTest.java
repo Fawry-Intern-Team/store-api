@@ -4,6 +4,7 @@ import com.example.store_service.model.ReservedStock;
 import com.example.store_service.model.Stock;
 import com.example.store_service.model.Store;
 import com.example.store_service.repositry.ReservedStockRepository;
+import com.example.store_service.repositry.StockHistoryRepository;
 import com.example.store_service.repositry.StockRepository;
 import com.example.store_service.service.ReservedStockService;
 import org.example.events.OrderCreatedEvent;
@@ -29,6 +30,9 @@ class ReservedStockServiceTest {
 
     @Mock
     private ReservedStockRepository reservedStockRepository;
+
+    @Mock
+    private StockHistoryRepository stockHistoryRepository;
 
     @InjectMocks
     private ReservedStockService reservedStockService;
@@ -67,6 +71,7 @@ class ReservedStockServiceTest {
         // Assert
         verify(reservedStockRepository).save(any(ReservedStock.class));
         verify(stockRepository).save(argThat(s -> s.getQuantity() == 5));
+        verify(stockHistoryRepository).save(any());
     }
 
     @Test
@@ -155,6 +160,7 @@ class ReservedStockServiceTest {
 
         // 2. ReservedStock deleted
         verify(reservedStockRepository).deleteAll(List.of(reservedStock));
+        verify(stockHistoryRepository).save(any());
     }
 
     @Test
