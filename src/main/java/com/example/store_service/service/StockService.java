@@ -46,17 +46,20 @@ public class StockService {
             if(stock1.isPresent()){
                 throw new RuntimeException("Stock Is Already Created");
             }
+            stockHistoryRepository.save(
+                    StockHistory.builder()
+                            .storeId(store.getId())
+                            .productId(stockDto.getProductId())
+                            .quantityChange(stockDto.getQuantity())
+                            .reason(stockDto.getReason())
+                            .timestamp(LocalDateTime.now())
+                            .build()
+            );
             Stock stock = stockMapper.toEntity(stockDto);
             stockRepository.save(stock);
 
             log.debug("Stock created successfully");
-            stockHistoryRepository.save(
-                    StockHistory.builder()
-                            .store(store)
-                            .quantityChange(stock.getQuantity())
-                            .timestamp(LocalDateTime.now())
-                            .build()
-            );
+
 
         }catch (Exception e){
             log.error("Failed to create stock - StoreId: {}, ProductId: {}, Quantity: {}. Error: {}",
@@ -84,7 +87,8 @@ public class StockService {
 
             stockHistoryRepository.save(
                     StockHistory.builder()
-                            .store(store)
+                            .storeId(store.getId())
+                            .productId(stockDto.getProductId())
                             .quantityChange(stockDto.getQuantity())
                             .reason(stockDto.getReason())
                             .timestamp(LocalDateTime.now())
@@ -117,7 +121,8 @@ public class StockService {
 
             stockHistoryRepository.save(
                     StockHistory.builder()
-                            .store(store)
+                            .storeId(store.getId())
+                            .productId(stockDto.getProductId())
                             .quantityChange(-stockDto.getQuantity())
                             .reason(stockDto.getReason())
                             .timestamp(LocalDateTime.now())

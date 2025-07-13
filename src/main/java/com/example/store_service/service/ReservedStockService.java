@@ -7,6 +7,7 @@ import com.example.store_service.model.Stock;
 import com.example.store_service.model.StockHistory;
 import com.example.store_service.model.Store;
 import com.example.store_service.repositry.ReservedStockRepository;
+import com.example.store_service.repositry.StockHistoryRepository;
 import com.example.store_service.repositry.StockRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.example.events.OrderCreatedEvent;
@@ -23,11 +24,13 @@ public class ReservedStockService {
 
     private final StockRepository stockRepository;
     private final ReservedStockRepository reservedStockRepository;
+    private final StockHistoryRepository stockHistoryRepository;
 
     @Autowired
-    public ReservedStockService(StockRepository stockRepository, ReservedStockRepository reservedStockRepository) {
+    public ReservedStockService(StockRepository stockRepository, ReservedStockRepository reservedStockRepository, StockHistoryRepository stockHistoryRepository) {
         this.stockRepository = stockRepository;
         this.reservedStockRepository = reservedStockRepository;
+        this.stockHistoryRepository = stockHistoryRepository;
         log.info("ReservedStockService initialized");
     }
 
@@ -55,7 +58,16 @@ public class ReservedStockService {
                 stock.setQuantity(stock.getQuantity() - reserved.getQuantity());
 
                 stockRepository.save(stock);
+                stockHistoryRepository.save(
+                        StockHistory.builder()
+                                .storeId(reserved.getStoreId())
+                                .productId(reserved.getProductId())
+                                .quantityChange(-reserved.getQuantity())
+                                .timestamp(LocalDateTime.now())
+                                .build()
+                );
             }
+
 
             log.info("Successfully reserved and consumed stock for orderId: {} with {} items",
                     orderCreatedEvent.getOrderId(), orderCreatedEvent.getItems().size());
@@ -89,6 +101,15 @@ public class ReservedStockService {
 
                     stock.setQuantity(newQuantity);
                     stockRepository.save(stock);
+
+                    stockHistoryRepository.save(
+                            StockHistory.builder()
+                                    .storeId(reserved.getStoreId())
+                                    .productId(reserved.getProductId())
+                                    .quantityChange(reserved.getQuantity())
+                                    .timestamp(LocalDateTime.now())
+                                    .build()
+                    );
 
                     log.debug("Stock updated for ProductId: {} - Old quantity: {}, New quantity: {}",
                             reserved.getProductId(), oldQuantity, newQuantity);

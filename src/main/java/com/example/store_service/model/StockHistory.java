@@ -20,10 +20,9 @@ public class StockHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Store is required")
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "store_id")
-    private Store store;
+    private Long storeId;
+
+    private Long productId;
 
     // Consider allowing negative values for decrease
     private int quantityChange;
