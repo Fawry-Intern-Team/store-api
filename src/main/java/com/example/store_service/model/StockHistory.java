@@ -19,7 +19,7 @@ import java.util.UUID;
 public class StockHistory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private UUID storeId;

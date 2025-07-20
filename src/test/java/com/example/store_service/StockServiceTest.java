@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -28,6 +30,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StockServiceTest {
+    @Mock
+    private RestTemplate restTemplate;
 
     @Mock
     private StockRepository stockRepository;
@@ -68,6 +72,7 @@ class StockServiceTest {
     @Test
     void addStock_Success() {
         // Arrange
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(ResponseEntity.ok("Product exists"));
         when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
         when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.of(testStock));
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
@@ -87,6 +92,7 @@ class StockServiceTest {
     @Test
     void addStock_StoreNotFound() {
         // Arrange
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(ResponseEntity.ok("Product exists"));
         when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -98,6 +104,7 @@ class StockServiceTest {
     @Test
     void addStock_StockNotFound() {
         // Arrange
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(ResponseEntity.ok("Product exists"));
         when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
         when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.empty());
 
@@ -111,6 +118,7 @@ class StockServiceTest {
     @Test
     void consumeStock_Success() {
         // Arrange
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(ResponseEntity.ok("Product exists"));
         when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
         when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.of(testStock));
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
@@ -130,6 +138,7 @@ class StockServiceTest {
     @Test
     void consumeStock_NotEnoughStock() {
         // Arrange
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(ResponseEntity.ok("Product exists"));
         testStockDto.setQuantity(60); // More than available (50)
         when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
         when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.of(testStock));
@@ -145,14 +154,28 @@ class StockServiceTest {
     @Test
     void consumeStock_StockNotFound() {
         // Arrange
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(ResponseEntity.ok("Product exists"));
         when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
         when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> stockService.consumeStock(testStockDto));
-        assertEquals("Stock not found", exception.getMessage());
+        assertEquals("Stock not found for given store and product.", exception.getMessage());
         verify(stockRepository, never()).save(any(Stock.class));
         verify(stockHistoryRepository, never()).save(any(StockHistory.class));
+    }
+
+    @Test
+    void createStock_ProductNotFound_ShouldThrowException() {
+        // Arrange: mock product not found
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
+                .thenReturn(ResponseEntity.status(404).body("Not Found"));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> stockService.createStock(testStockDto));
+
+        assertTrue(exception.getMessage().contains("Product not found"));
     }
 }

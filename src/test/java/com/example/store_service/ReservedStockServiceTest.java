@@ -7,6 +7,7 @@ import com.example.store_service.repositry.ReservedStockRepository;
 import com.example.store_service.repositry.StockHistoryRepository;
 import com.example.store_service.repositry.StockRepository;
 import com.example.store_service.service.ReservedStockService;
+import jakarta.persistence.EntityNotFoundException;
 import org.example.events.OrderCreatedEvent;
 import org.example.events.OrderItemDTO;
 import org.junit.jupiter.api.Test;
@@ -195,10 +196,11 @@ class ReservedStockServiceTest {
         when(stockRepository.findByProductId(productId)).thenReturn(Optional.empty());
 
         // Act
-        reservedStockService.rollbackStock(orderId);
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> reservedStockService.rollbackStock(orderId));
 
-        // Assert
-        verify(stockRepository, never()).save(any());
-        verify(reservedStockRepository).deleteAll(List.of(reservedStock));
+        //assert
+        assertEquals("Stock not found for productId " + productId, exception.getMessage());
+
     }
 }

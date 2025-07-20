@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,25 +27,20 @@ public class StoreService {
     }
 
     public Store createStore(Store store) {
-        log.info("Starting store creation - ID: {}, Location: {}",
-                store.getId(), store.getLocation());
+        log.info("Starting store creation - ID: {}, Location: {}", store.getId(), store.getLocation());
 
-        try {
-            // Log store details before saving
-            log.debug("Store details - Id: {}, Location: {}",
-                    store.getId(), store.getLocation());
+        log.debug("Store details - Id: {}, Location: {}", store.getId(), store.getLocation());
 
-            Store savedStore = storeRepository.save(store);
-
-            log.info("Successfully created store with ID: {} , Location: {}",
-                    savedStore.getId(), savedStore.getLocation());
-
-            return savedStore;
-
-        } catch (Exception e) {
-            log.error("Failed to create store - ID: {}, Location: {}. Error: {}",
-                    store.getId(), store.getLocation(), e.getMessage(), e);
-            throw e;
+        Optional<Store> existingStore = storeRepository.findByLocation(store.getLocation());
+        if (existingStore.isPresent()) {
+            log.warn("Store already exists at location: {}", store.getLocation());
+            throw new IllegalArgumentException("Store already exists at location: " + store.getLocation());
         }
+
+        Store savedStore = storeRepository.save(store);
+
+        log.info("Successfully created store with ID: {}, Location: {}", savedStore.getId(), savedStore.getLocation());
+
+        return savedStore;
     }
 }

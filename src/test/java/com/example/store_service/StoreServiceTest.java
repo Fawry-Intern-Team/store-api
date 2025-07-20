@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +40,7 @@ public class StoreServiceTest {
     @Test
     void createStore_Success() {
         // Arrange
+        when(storeRepository.findByLocation("Test Location")).thenReturn(Optional.empty());
         when(storeRepository.save(any(Store.class))).thenReturn(testStore);
 
         // Act
@@ -48,6 +50,23 @@ public class StoreServiceTest {
         assertNotNull(result);
         assertEquals("Test Location", result.getLocation());
         assertEquals(UUID.nameUUIDFromBytes("1".getBytes()), result.getId());
+
+        verify(storeRepository).findByLocation("Test Location");
         verify(storeRepository).save(testStore);
+    }
+
+    @Test
+    void createStore_StoreAlreadyExists_ThrowsException() {
+        // Arrange
+        when(storeRepository.findByLocation("Test Location")).thenReturn(Optional.of(testStore));
+
+        // Act & Assert
+        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> storeService.createStore(testStore)
+        );
+
+        assertEquals("Store already exists at location: Test Location", exception.getMessage());
+        verify(storeRepository).findByLocation("Test Location");
     }
 }
