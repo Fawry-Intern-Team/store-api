@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,19 +48,19 @@ class StockServiceTest {
     @BeforeEach
     void setUp() {
         testStore = new Store();
-        testStore.setId(1L);
+        testStore.setId(UUID.nameUUIDFromBytes("1".getBytes()));
         testStore.setLocation("Test Location");
 
         testStock = Stock.builder()
-                .id(1L)
+                .id(UUID.nameUUIDFromBytes("1".getBytes()))
                 .storeId(testStore.getId())
-                .productId(100L)
+                .productId(UUID.nameUUIDFromBytes("100".getBytes()))
                 .quantity(50)
                 .build();
 
         testStockDto = new StockDto();
-        testStockDto.setStoreId(1L);
-        testStockDto.setProductId(100L);
+        testStockDto.setStoreId(UUID.nameUUIDFromBytes("1".getBytes()));
+        testStockDto.setProductId(UUID.nameUUIDFromBytes("100".getBytes()));
         testStockDto.setQuantity(10);
         testStockDto.setReason("Test Reason");
     }
@@ -67,8 +68,8 @@ class StockServiceTest {
     @Test
     void addStock_Success() {
         // Arrange
-        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.of(testStock));
+        when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.of(testStock));
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
         when(stockHistoryRepository.save(any(StockHistory.class))).thenReturn(new StockHistory());
 
@@ -76,8 +77,8 @@ class StockServiceTest {
         stockService.addStock(testStockDto);
 
         // Assert
-        verify(storeRepository).findById(1);
-        verify(stockRepository).findByStoreIdAndProductId(testStore.getId(), 100L);
+        verify(storeRepository).findById(UUID.nameUUIDFromBytes("1".getBytes()));
+        verify(stockRepository).findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()));
         verify(stockRepository).save(testStock);
         verify(stockHistoryRepository).save(any(StockHistory.class));
         assertEquals(60, testStock.getQuantity());
@@ -86,7 +87,7 @@ class StockServiceTest {
     @Test
     void addStock_StoreNotFound() {
         // Arrange
-        when(storeRepository.findById(anyInt())).thenReturn(Optional.empty());
+        when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> stockService.addStock(testStockDto));
@@ -97,8 +98,8 @@ class StockServiceTest {
     @Test
     void addStock_StockNotFound() {
         // Arrange
-        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.empty());
+        when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> stockService.addStock(testStockDto));
@@ -110,8 +111,8 @@ class StockServiceTest {
     @Test
     void consumeStock_Success() {
         // Arrange
-        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.of(testStock));
+        when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.of(testStock));
         when(stockRepository.save(any(Stock.class))).thenReturn(testStock);
         when(stockHistoryRepository.save(any(StockHistory.class))).thenReturn(new StockHistory());
 
@@ -119,8 +120,8 @@ class StockServiceTest {
         stockService.consumeStock(testStockDto);
 
         // Assert
-        verify(storeRepository).findById(1);
-        verify(stockRepository).findByStoreIdAndProductId(testStore.getId(), 100L);
+        verify(storeRepository).findById(UUID.nameUUIDFromBytes("1".getBytes()));
+        verify(stockRepository).findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()));
         verify(stockRepository).save(testStock);
         verify(stockHistoryRepository).save(any(StockHistory.class));
         assertEquals(40, testStock.getQuantity()); // 50 - 10
@@ -130,8 +131,8 @@ class StockServiceTest {
     void consumeStock_NotEnoughStock() {
         // Arrange
         testStockDto.setQuantity(60); // More than available (50)
-        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.of(testStock));
+        when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.of(testStock));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class,
@@ -144,8 +145,8 @@ class StockServiceTest {
     @Test
     void consumeStock_StockNotFound() {
         // Arrange
-        when(storeRepository.findById(anyInt())).thenReturn(Optional.of(testStore));
-        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), 100L)).thenReturn(Optional.empty());
+        when(storeRepository.findById(any(UUID.class))).thenReturn(Optional.of(testStore));
+        when(stockRepository.findByStoreIdAndProductId(testStore.getId(), UUID.nameUUIDFromBytes("100".getBytes()))).thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class,

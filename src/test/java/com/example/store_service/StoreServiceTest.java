@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +32,7 @@ public class StoreServiceTest {
     @BeforeEach
     void setUp() {
         testStore = new Store();
-        testStore.setId(1L);
+        testStore.setId(UUID.nameUUIDFromBytes("1".getBytes()));
         testStore.setLocation("Test Location");
     }
 
@@ -45,7 +47,7 @@ public class StoreServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals("Test Location", result.getLocation());
-        assertEquals(1L, result.getId());
+        assertEquals(UUID.nameUUIDFromBytes("1".getBytes()), result.getId());
         verify(storeRepository).save(testStore);
     }
 }

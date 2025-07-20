@@ -22,7 +22,7 @@ public class ReservedStockController {
     }
 
     @PostMapping("/reserve")
-    public ResponseEntity<Void> reserveStock(@RequestBody @Valid @RequestHeader(value = "X-API-Version", defaultValue = "v1") OrderCreatedEvent orderCreatedEvent){
+    public ResponseEntity<Void> reserveStock(@RequestBody @Valid  OrderCreatedEvent orderCreatedEvent, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         reservedStockService.reserveStock(orderCreatedEvent);
         return ResponseEntity.ok().build();
     }

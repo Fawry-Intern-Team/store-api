@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -16,10 +19,10 @@ import lombok.NoArgsConstructor;
 public class ReservedStock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
-    private Long storeId;
-    private Long orderId;
-    private Long productId;
+    private UUID storeId;
+    private UUID orderId;
+    private UUID productId;
     private int quantity;
 }

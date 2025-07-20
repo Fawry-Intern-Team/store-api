@@ -21,7 +21,7 @@ public class StoreController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Store> createStore(@RequestBody @Valid @RequestHeader(value = "X-API-Version", defaultValue = "v1") Store store){
+    public ResponseEntity<Store> createStore(@RequestBody @Valid Store store, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         return ResponseEntity.ok(storeService.createStore(store));
     }
 }

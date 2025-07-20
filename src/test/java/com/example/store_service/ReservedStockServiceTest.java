@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,13 +38,13 @@ class ReservedStockServiceTest {
     @InjectMocks
     private ReservedStockService reservedStockService;
 
-    private final Long orderId = 1L;
+    private final UUID orderId = UUID.nameUUIDFromBytes("1".getBytes());;
 
     @Test
     void reserveStock_shouldReserveSuccessfully() {
         // Arrange
-        Long storeId = 10L;
-        Long productId = 20L;
+        UUID storeId = UUID.nameUUIDFromBytes("10".getBytes());;
+        UUID productId = UUID.nameUUIDFromBytes("20".getBytes());;
         int quantity = 5;
 
         Stock stock = Stock.builder()
@@ -77,8 +78,8 @@ class ReservedStockServiceTest {
     @Test
     void reserveStock_shouldThrowIfStockNotFound() {
         // Arrange
-        Long storeId = 1L;
-        Long productId = 2L;
+        UUID storeId = UUID.nameUUIDFromBytes("1".getBytes());;
+        UUID productId = UUID.nameUUIDFromBytes("2".getBytes());;
 
         OrderItemDTO item = OrderItemDTO.builder()
                 .storeId(storeId)
@@ -87,7 +88,7 @@ class ReservedStockServiceTest {
                 .build();
 
         OrderCreatedEvent event = OrderCreatedEvent.builder()
-                .orderId(100L)
+                .orderId(UUID.nameUUIDFromBytes("100".getBytes()))
                 .items(List.of(item))
                 .build();
 
@@ -101,8 +102,8 @@ class ReservedStockServiceTest {
     @Test
     void reserveStock_shouldThrowIfInsufficientStock() {
         // Arrange
-        Long storeId = 1L;
-        Long productId = 2L;
+        UUID storeId = UUID.nameUUIDFromBytes("1".getBytes());;
+        UUID productId = UUID.nameUUIDFromBytes("2".getBytes());;
 
         Stock stock = Stock.builder()
                 .storeId(storeId)
@@ -117,7 +118,7 @@ class ReservedStockServiceTest {
                 .build();
 
         OrderCreatedEvent event = OrderCreatedEvent.builder()
-                .orderId(200L)
+                .orderId(UUID.nameUUIDFromBytes("200".getBytes()))
                 .items(List.of(item))
                 .build();
 
@@ -132,8 +133,8 @@ class ReservedStockServiceTest {
     @Test
     void rollbackStock_shouldRestoreStockAndDeleteReserved() {
         // Arrange
-        Long orderId = 1L;
-        Long productId = 100L;
+        UUID orderId = UUID.nameUUIDFromBytes("1".getBytes());;
+        UUID productId = UUID.nameUUIDFromBytes("100".getBytes());;
 
         ReservedStock reservedStock = ReservedStock.builder()
                 .orderId(orderId)
@@ -166,7 +167,7 @@ class ReservedStockServiceTest {
     @Test
     void rollbackStock_shouldSkipIfNoReservedStock() {
         // Arrange
-        Long orderId = 2L;
+        UUID orderId = UUID.nameUUIDFromBytes("2".getBytes());;
 
         when(reservedStockRepository.findByOrderId(orderId)).thenReturn(Collections.emptyList());
 
@@ -181,8 +182,8 @@ class ReservedStockServiceTest {
     @Test
     void rollbackStock_shouldHandleMissingStock() {
         // Arrange
-        Long orderId = 3L;
-        Long productId = 200L;
+        UUID orderId = UUID.nameUUIDFromBytes("3".getBytes());;
+        UUID productId = UUID.nameUUIDFromBytes("200".getBytes());;
 
         ReservedStock reservedStock = ReservedStock.builder()
                 .orderId(orderId)

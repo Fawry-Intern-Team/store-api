@@ -41,7 +41,7 @@ public class StockService {
             log.info("Starting stock creation - StoreId: {}, ProductId: {}, Quantity: {}",
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity());
 
-            Store store = storeRepository.findById(Math.toIntExact(stockDto.getStoreId())).orElseThrow();
+            Store store = storeRepository.findById(stockDto.getStoreId()).orElseThrow();
             Optional<Stock> stock1 = stockRepository.findByStoreIdAndProductId(stockDto.getStoreId(), stockDto.getProductId());
             if(stock1.isPresent()){
                 throw new RuntimeException("Stock Is Already Created");
@@ -74,7 +74,7 @@ public class StockService {
             log.info("Starting stock addition - StoreId: {}, ProductId: {}, Quantity: {}",
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity());
 
-            Store store = storeRepository.findById(Math.toIntExact(stockDto.getStoreId())).orElseThrow();
+            Store store = storeRepository.findById(stockDto.getStoreId()).orElseThrow();
 
             Stock stock1 = stockRepository.findByStoreIdAndProductId(stockDto.getStoreId(), stockDto.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("Stock not found for given store and product."));
@@ -106,7 +106,7 @@ public class StockService {
         try {
             log.info("Starting stock consumption - StoreId: {}, ProductId: {}, Quantity: {}",
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity());
-            Store store = storeRepository.findById(Math.toIntExact(stockDto.getStoreId())).orElseThrow();
+            Store store = storeRepository.findById(stockDto.getStoreId()).orElseThrow();
 
             Stock stock = stockRepository.findByStoreIdAndProductId(stockDto.getStoreId(), stockDto.getProductId())
                     .orElseThrow(() -> new RuntimeException("Stock not found"));

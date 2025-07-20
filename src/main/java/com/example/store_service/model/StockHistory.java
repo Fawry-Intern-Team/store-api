@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
 @Builder
 @Data
@@ -18,11 +20,11 @@ public class StockHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
-    private Long storeId;
+    private UUID storeId;
 
-    private Long productId;
+    private UUID productId;
 
     // Consider allowing negative values for decrease
     private int quantityChange;

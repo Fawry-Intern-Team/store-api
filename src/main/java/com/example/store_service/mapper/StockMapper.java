@@ -8,6 +8,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
+import java.util.UUID;
+
 @Mapper(componentModel = "spring")
 public interface StockMapper {
 
@@ -17,7 +19,7 @@ public interface StockMapper {
     Stock toEntity(StockDto dto);
 
     @Named("mapStoreIdToStore")
-    static Store mapStoreIdToStore(Long storeId) {
+    static Store mapStoreIdToStore(UUID storeId) {
         if (storeId == null) return null;
         Store store = new Store();
         store.setId(storeId);

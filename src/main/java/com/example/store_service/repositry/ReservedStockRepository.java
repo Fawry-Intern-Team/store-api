@@ -6,10 +6,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface ReservedStockRepository extends JpaRepository<ReservedStock,Integer> {
+public interface ReservedStockRepository extends JpaRepository<ReservedStock,UUID> {
     Pageable pageable = PageRequest.of(0, 10);
-    List<ReservedStock> findByOrderId(Long orderId);
+    List<ReservedStock> findByOrderId(UUID orderId);
 
-    void deleteByOrderId(Long testOrderId);
+    void deleteByOrderId(UUID testOrderId);
 }

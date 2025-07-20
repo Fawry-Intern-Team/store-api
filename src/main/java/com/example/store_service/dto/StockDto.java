@@ -4,12 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockDto {
-    private Long storeId;
-    private Long productId;
+    private UUID storeId;
+    private UUID productId;
     private int quantity;
     private String Reason;
 }

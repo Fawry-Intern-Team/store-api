@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -78,7 +79,7 @@ public class ReservedStockService {
         }
     }
 
-    public void rollbackStock(Long orderId) {
+    public void rollbackStock(UUID orderId) {
         log.info("Starting stock rollback for orderId: {}", orderId);
         try {
             List<ReservedStock> reservedList = reservedStockRepository.findByOrderId(orderId);

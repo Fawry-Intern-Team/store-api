@@ -17,19 +17,19 @@ public class StockController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Void> addStock(@RequestBody @Valid @RequestHeader(value = "X-API-Version", defaultValue = "v1")StockDto stock){
+    public ResponseEntity<Void> addStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.addStock(stock);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Void> create(@RequestBody @Valid @RequestHeader(value = "X-API-Version", defaultValue = "v1")StockDto stock){
+    public ResponseEntity<Void> create(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.createStock(stock);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/consume")
-    public ResponseEntity<Void> consumeStock(@RequestBody @Valid @RequestHeader(value = "X-API-Version", defaultValue = "v1")StockDto stock){
+    public ResponseEntity<Void> consumeStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.consumeStock(stock);
         return ResponseEntity.ok().build();
     }
