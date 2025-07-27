@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -24,6 +25,11 @@ public class StoreService {
     public StoreService(StoreRepository storeRepository) {
         this.storeRepository = storeRepository;
         log.info("StoreService initialized");
+    }
+
+    public List<Store> getStores(){
+        log.info("Fetching all stores");
+        return storeRepository.findAll();
     }
 
     public Store createStore(Store store) {

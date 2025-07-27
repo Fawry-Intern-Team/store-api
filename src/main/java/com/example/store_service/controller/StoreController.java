@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/store")
 public class StoreController {
@@ -23,5 +25,10 @@ public class StoreController {
     @PostMapping("/create")
     public ResponseEntity<Store> createStore(@RequestBody @Valid Store store, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         return ResponseEntity.ok(storeService.createStore(store));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Store>> getStores(){
+        return ResponseEntity.ok(storeService.getStores());
     }
 }

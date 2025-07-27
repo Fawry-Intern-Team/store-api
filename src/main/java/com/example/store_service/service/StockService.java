@@ -139,4 +139,9 @@ public class StockService {
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity(),
                     stock.getQuantity(), stockDto.getReason());
         }
+
+    public Stock getStockByStoreId(UUID storeId) {
+        log.info("Fetching stock ");
+        return stockRepository.findByStoreId(storeId).orElseThrow();
+    }
 }
