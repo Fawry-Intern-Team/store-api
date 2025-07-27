@@ -138,9 +138,9 @@ public class StockService {
             log.info("Successfully consumed stock - StoreId: {}, ProductId: {}, Quantity consumed: {}, Remaining: {}, Reason: {}",
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity(),
                     stock.getQuantity(), stockDto.getReason());
-        }
+    }
 
-    public Stock getStockByStoreId(UUID storeId) {
+    public List<Stock> getStocksByStoreId(UUID storeId) {
         log.info("Fetching stock ");
         return stockRepository.findByStoreId(storeId).orElseThrow();
     }

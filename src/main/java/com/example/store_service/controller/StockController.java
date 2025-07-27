@@ -22,8 +22,8 @@ public class StockController {
 
 
     @GetMapping("/{storeId}/stock")
-    public ResponseEntity<Stock> getStockByStoreId(@PathVariable UUID storeId) {
-        return ResponseEntity.ok(stockService.getStockByStoreId(storeId));
+    public ResponseEntity<List<Stock>> getStocksByStoreId(@PathVariable UUID storeId) {
+        return ResponseEntity.ok(stockService.getStocksByStoreId(storeId));
     }
     @PostMapping("/stock/add")
     public ResponseEntity<Void> addStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
