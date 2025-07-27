@@ -20,23 +20,24 @@ public class StockController {
         this.stockService = stockService;
     }
 
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/{storeId}/stock")
     public ResponseEntity<List<Stock>> getStocksByStoreId(@PathVariable UUID storeId) {
         return ResponseEntity.ok(stockService.getStocksByStoreId(storeId));
     }
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/stock/add")
     public ResponseEntity<Void> addStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.addStock(stock);
         return ResponseEntity.ok().build();
     }
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/stock/create")
     public ResponseEntity<Void> create(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.createStock(stock);
         return ResponseEntity.ok().build();
     }
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/stock/consume")
     public ResponseEntity<Void> consumeStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.consumeStock(stock);

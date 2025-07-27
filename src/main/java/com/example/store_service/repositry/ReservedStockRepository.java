@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public interface ReservedStockRepository extends JpaRepository<ReservedStock,UUID> {
     Pageable pageable = PageRequest.of(0, 10);
+
     List<ReservedStock> findByOrderId(UUID orderId);
 
     void deleteByOrderId(UUID testOrderId);
