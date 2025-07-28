@@ -1,7 +1,6 @@
 package com.example.store_service.controller;
 
 import com.example.store_service.dto.StockDto;
-import com.example.store_service.dto.StoreProductResponse;
 import com.example.store_service.model.Stock;
 import com.example.store_service.service.StockService;
 import jakarta.validation.Valid;

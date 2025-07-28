@@ -1,8 +1,5 @@
 package com.example.store_service.controller;
 
-import com.example.store_service.dto.StockDto;
-import com.example.store_service.dto.StoreProductResponse;
-import com.example.store_service.model.Stock;
 import com.example.store_service.model.Store;
 import com.example.store_service.service.StoreService;
 import jakarta.validation.Valid;
@@ -11,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/store")
