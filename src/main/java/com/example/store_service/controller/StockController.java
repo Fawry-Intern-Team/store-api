@@ -51,4 +51,5 @@ public class StockController {
     public ResponseEntity<List<List<Stock>>> getProductsWithStore(@RequestBody List<UUID> productIds) {
         return ResponseEntity.ok(stockService.getProductsWithStore(productIds));
     }
+
 }

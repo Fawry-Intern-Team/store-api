@@ -93,7 +93,7 @@ public class ReservedStockService {
             log.debug("Rolling back stock - ProductId: {}, Quantity: {}",
                     reserved.getProductId(), reserved.getQuantity());
 
-            Stock stock = stockRepository.findByProductId(reserved.getProductId())
+            Stock stock = stockRepository.findByStoreIdAndProductId(reserved.getStoreId(),reserved.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("Stock not found for productId " + reserved.getProductId()));
 
             int oldQuantity = stock.getQuantity();
