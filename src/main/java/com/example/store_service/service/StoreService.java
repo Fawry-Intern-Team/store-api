@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -46,5 +47,11 @@ public class StoreService {
         log.info("Successfully created store with ID: {}, Location: {}", savedStore.getId(), savedStore.getLocation());
 
         return savedStore;
+    }
+
+    public Store getStoreById(UUID id) {
+        log.info("Fetching store by ID: {}", id);
+        return storeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Store not found with ID: " + id));
     }
 }

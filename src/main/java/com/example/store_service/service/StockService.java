@@ -45,7 +45,7 @@ public class StockService {
         this.restTemplate = restTemplate;
     }
     public void validateProductExists(UUID productId) {
-        String productServiceUrl = "http://localhost:8081/product/" + productId;
+        String productServiceUrl = "http://localhost:8081/product?id=" + productId;
         ResponseEntity<String> response = restTemplate.getForEntity(productServiceUrl, String.class);
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {

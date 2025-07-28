@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/store")
@@ -18,6 +19,11 @@ public class StoreController {
     @Autowired
     public StoreController(StoreService storeService) {
         this.storeService = storeService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Store> getStoreById(@PathVariable UUID id) {
+        return ResponseEntity.ok(storeService.getStoreById(id));
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
@@ -31,4 +37,5 @@ public class StoreController {
     public ResponseEntity<List<Store>> getStores(){
         return ResponseEntity.ok(storeService.getStores());
     }
+
 }

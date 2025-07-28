@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/store")
+@RequestMapping("/api/stock")
 public class StockController {
     private final StockService stockService;
     @Autowired
@@ -21,33 +21,33 @@ public class StockController {
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @GetMapping("/{storeId}/stock")
-    public ResponseEntity<List<Stock>> getStocksByStoreId(@PathVariable UUID storeId) {
+    @GetMapping
+    public ResponseEntity<List<Stock>> getStocksByStoreId(@RequestParam UUID storeId) {
         return ResponseEntity.ok(stockService.getStocksByStoreId(storeId));
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/stock/add")
+    @PostMapping("/add")
     public ResponseEntity<Void> addStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.addStock(stock);
         return ResponseEntity.ok().build();
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/stock/create")
+    @PostMapping("/create")
     public ResponseEntity<Void> create(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.createStock(stock);
         return ResponseEntity.ok().build();
     }
     
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/stock/consume")
+    @PostMapping("/consume")
     public ResponseEntity<Void> consumeStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.consumeStock(stock);
         return ResponseEntity.ok().build();
     }
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/stock/products")
+    @PostMapping("/products")
     public ResponseEntity<List<List<Stock>>> getProductsWithStore(@RequestBody List<UUID> productIds) {
         return ResponseEntity.ok(stockService.getProductsWithStore(productIds));
     }
