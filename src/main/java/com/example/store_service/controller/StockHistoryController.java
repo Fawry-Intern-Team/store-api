@@ -20,6 +20,7 @@ public class StockHistoryController {
         this.stockHistoryService = stockHistoryService;
     }
 
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping
     public ResponseEntity<List<StockHistory>> getStockHistoryForStore(@PathVariable UUID storeId){
         return ResponseEntity.ok(stockHistoryService.getStockHistoryForStore(storeId));

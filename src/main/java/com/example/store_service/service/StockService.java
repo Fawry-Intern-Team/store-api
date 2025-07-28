@@ -133,7 +133,7 @@ public class StockService {
 
             log.debug("Stock consumed successfully - New quantity: {}", stock.getQuantity());
 
-            saveStockHistory(store.getId(), productId, stockDto.getQuantity(), stockDto.getReason());
+            saveStockHistory(store.getId(), productId, -stockDto.getQuantity(), stockDto.getReason());
 
             log.info("Successfully consumed stock - StoreId: {}, ProductId: {}, Quantity consumed: {}, Remaining: {}, Reason: {}",
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity(),
