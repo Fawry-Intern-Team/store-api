@@ -1,6 +1,7 @@
 package com.example.store_service.service;
 
 import com.example.store_service.dto.StockDto;
+import com.example.store_service.dto.StoreProductResponse;
 import com.example.store_service.model.Stock;
 import com.example.store_service.model.StockHistory;
 import com.example.store_service.model.Store;
@@ -14,16 +15,21 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
 public class StoreService {
 
+
+    private final StockService stockService;
+
     private final StoreRepository storeRepository;
 
     @Autowired
-    public StoreService(StoreRepository storeRepository) {
+    public StoreService(StoreRepository storeRepository,StockService stockService) {
         this.storeRepository = storeRepository;
+        this.stockService = stockService;
         log.info("StoreService initialized");
     }
 

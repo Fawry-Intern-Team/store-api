@@ -23,6 +23,8 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private String name;
+
     @NotBlank
     private String location;
 

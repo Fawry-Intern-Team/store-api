@@ -17,6 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,7 +44,7 @@ public class StockService {
         this.stockHistoryRepository = stockHistoryRepository;
         this.restTemplate = restTemplate;
     }
-    private void validateProductExists(UUID productId) {
+    public void validateProductExists(UUID productId) {
         String productServiceUrl = "http://localhost:8081/product/" + productId;
         ResponseEntity<String> response = restTemplate.getForEntity(productServiceUrl, String.class);
 
@@ -143,5 +144,18 @@ public class StockService {
     public List<Stock> getStocksByStoreId(UUID storeId) {
         log.info("Fetching stock ");
         return stockRepository.findByStoreId(storeId).orElseThrow();
+    }
+
+    public List<List<Stock>> getProductsWithStore(List<UUID> productIds) {
+        List<List<Stock>> validStocks = new ArrayList<>();
+
+        for (UUID productId : productIds) {
+            validateProductExists(productId); // check via REST
+            List<Stock> stocks = stockRepository.findStocksByProductId(productId);
+            validStocks.add(stocks); // add list (even if empty)
+        }
+
+        System.out.println(validStocks);
+        return validStocks;
     }
 }

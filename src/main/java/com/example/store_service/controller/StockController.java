@@ -1,6 +1,7 @@
 package com.example.store_service.controller;
 
 import com.example.store_service.dto.StockDto;
+import com.example.store_service.dto.StoreProductResponse;
 import com.example.store_service.model.Stock;
 import com.example.store_service.service.StockService;
 import jakarta.validation.Valid;
@@ -25,22 +26,30 @@ public class StockController {
     public ResponseEntity<List<Stock>> getStocksByStoreId(@PathVariable UUID storeId) {
         return ResponseEntity.ok(stockService.getStocksByStoreId(storeId));
     }
+
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/stock/add")
     public ResponseEntity<Void> addStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.addStock(stock);
         return ResponseEntity.ok().build();
     }
+
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/stock/create")
     public ResponseEntity<Void> create(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.createStock(stock);
         return ResponseEntity.ok().build();
     }
+    
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/stock/consume")
     public ResponseEntity<Void> consumeStock(@RequestBody @Valid StockDto stock, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         stockService.consumeStock(stock);
         return ResponseEntity.ok().build();
+    }
+    @CrossOrigin(origins = "http://localhost:4200")
+    @PostMapping("/stock/products")
+    public ResponseEntity<List<List<Stock>>> getProductsWithStore(@RequestBody List<UUID> productIds) {
+        return ResponseEntity.ok(stockService.getProductsWithStore(productIds));
     }
 }
