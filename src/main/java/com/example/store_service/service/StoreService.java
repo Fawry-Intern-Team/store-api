@@ -4,6 +4,8 @@ import com.example.store_service.model.Store;
 import com.example.store_service.repositry.StoreRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +31,12 @@ public class StoreService {
     public List<Store> getStores(){
         log.info("Fetching all stores");
         return storeRepository.findAll();
+    }
+
+    public Page<Store> getStoresPaginated(Pageable pageable) {
+        log.info("Fetching stores with pagination - Page: {}, Size: {}, Sort: {}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        return storeRepository.findAll(pageable);
     }
 
     public Store createStore(Store store) {

@@ -17,16 +17,21 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockHistory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private UUID storeId;
+    @ManyToOne
+    @JoinColumn(name = "storeId", nullable = false)
+    private Store store;
 
+    @ManyToOne
+    @JoinColumn(name = "stockId", nullable = false)
+    private Stock stock;
+
+    @NotNull
     private UUID productId;
 
-    // Consider allowing negative values for decrease
     private int quantityChange;
 
     private String reason;
@@ -34,3 +39,4 @@ public class StockHistory {
     @NotNull(message = "Timestamp is required")
     private LocalDateTime timestamp;
 }
+

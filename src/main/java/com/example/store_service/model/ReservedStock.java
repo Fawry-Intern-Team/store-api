@@ -1,9 +1,7 @@
 package com.example.store_service.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,8 +19,19 @@ public class ReservedStock {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private UUID storeId;
+    @ManyToOne
+    @JoinColumn(name = "stockId", nullable = false)
+    private Stock stock;
+
+    @ManyToOne
+    @JoinColumn(name = "storeId", nullable = false)
+    private Store store;
+
+    @NotNull
     private UUID orderId;
+
+    @NotNull
     private UUID productId;
+
     private int quantity;
 }

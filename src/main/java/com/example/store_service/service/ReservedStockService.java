@@ -9,6 +9,7 @@ import com.example.store_service.model.Store;
 import com.example.store_service.repositry.ReservedStockRepository;
 import com.example.store_service.repositry.StockHistoryRepository;
 import com.example.store_service.repositry.StockRepository;
+import com.example.store_service.repositry.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.example.events.OrderCreatedEvent;
@@ -24,12 +25,14 @@ import java.util.UUID;
 @Service
 public class ReservedStockService {
 
+    private final StoreRepository storeRepository;
     private final StockRepository stockRepository;
     private final ReservedStockRepository reservedStockRepository;
     private final StockHistoryRepository stockHistoryRepository;
 
     @Autowired
-    public ReservedStockService(StockRepository stockRepository, ReservedStockRepository reservedStockRepository, StockHistoryRepository stockHistoryRepository) {
+    public ReservedStockService(StoreRepository storeRepository, StockRepository stockRepository, ReservedStockRepository reservedStockRepository, StockHistoryRepository stockHistoryRepository) {
+        this.storeRepository = storeRepository;
         this.stockRepository = stockRepository;
         this.reservedStockRepository = reservedStockRepository;
         this.stockHistoryRepository = stockHistoryRepository;
@@ -49,10 +52,9 @@ public class ReservedStockService {
             if (stock.getQuantity() < reserved.getQuantity()) {
                 throw new IllegalArgumentException("Insufficient stock for productId " + reserved.getProductId());
             }
-
             ReservedStock reservedStock = ReservedStock.builder()
                     .orderId(orderCreatedEvent.getOrderId())
-                    .storeId(reserved.getStoreId())
+                    .store(storeRepository.findById(reserved.getStoreId()).get())
                     .productId(reserved.getProductId())
                     .quantity(reserved.getQuantity())
                     .build();
@@ -64,7 +66,7 @@ public class ReservedStockService {
 
             stockHistoryRepository.save(
                     StockHistory.builder()
-                            .storeId(reserved.getStoreId())
+                            .store(storeRepository.findById(reserved.getStoreId()).get())
                             .productId(reserved.getProductId())
                             .quantityChange(-reserved.getQuantity())
                             .timestamp(LocalDateTime.now())
@@ -93,7 +95,7 @@ public class ReservedStockService {
             log.debug("Rolling back stock - ProductId: {}, Quantity: {}",
                     reserved.getProductId(), reserved.getQuantity());
 
-            Stock stock = stockRepository.findByStoreIdAndProductId(reserved.getStoreId(),reserved.getProductId())
+            Stock stock = stockRepository.findByStoreIdAndProductId(reserved.getStore().getId(),reserved.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("Stock not found for productId " + reserved.getProductId()));
 
             int oldQuantity = stock.getQuantity();
@@ -104,7 +106,7 @@ public class ReservedStockService {
 
             stockHistoryRepository.save(
                     StockHistory.builder()
-                            .storeId(reserved.getStoreId())
+                            .store(reserved.getStore())
                             .productId(reserved.getProductId())
                             .quantityChange(reserved.getQuantity())
                             .timestamp(LocalDateTime.now())
