@@ -22,6 +22,8 @@ public class StockHistory {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private UUID stockId;
+
     private UUID storeId;
 
     private UUID productId;

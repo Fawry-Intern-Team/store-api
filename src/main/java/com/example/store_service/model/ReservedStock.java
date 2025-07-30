@@ -22,7 +22,10 @@ public class ReservedStock {
     private UUID id;
 
     private UUID storeId;
+
     private UUID orderId;
+
     private UUID productId;
+
     private int quantity;
 }

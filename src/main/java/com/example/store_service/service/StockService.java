@@ -11,6 +11,8 @@ import com.example.store_service.repositry.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -45,7 +47,7 @@ public class StockService {
         this.restTemplate = restTemplate;
     }
     public void validateProductExists(UUID productId) {
-        String productServiceUrl = "http://localhost:8081/product/" + productId;
+        String productServiceUrl = "http://product-service:8081/product/" + productId;
         ResponseEntity<String> response = restTemplate.getForEntity(productServiceUrl, String.class);
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
@@ -53,10 +55,11 @@ public class StockService {
         }
     }
 
-    private void saveStockHistory(UUID storeId, UUID productId, int quantityChange, String reason) {
+    private void saveStockHistory(UUID storeId,UUID stockId, UUID productId, int quantityChange, String reason) {
         stockHistoryRepository.save(
                 StockHistory.builder()
                         .storeId(storeId)
+                        .stockId(stockId)
                         .productId(productId)
                         .quantityChange(quantityChange)
                         .reason(reason)
@@ -80,10 +83,10 @@ public class StockService {
             if (existingStock.isPresent()) {
                 throw new RuntimeException("Stock is already created for this store and product.");
             }
-            saveStockHistory(store.getId(), productId, stockDto.getQuantity(), stockDto.getReason());
 
             Stock stock = stockMapper.toEntity(stockDto);
             stockRepository.save(stock);
+            saveStockHistory(store.getId(),stock.getId(), productId, stockDto.getQuantity(), stockDto.getReason());
 
             log.debug("Stock created successfully");
 
@@ -106,7 +109,7 @@ public class StockService {
             stock.setQuantity(stock.getQuantity() + stockDto.getQuantity());
             stockRepository.save(stock);
 
-            saveStockHistory(store.getId(), productId, stockDto.getQuantity(), stockDto.getReason());
+            saveStockHistory(store.getId(),stock.getId(), productId, stockDto.getQuantity(), stockDto.getReason());
 
             log.debug("Stock updated successfully");
     }
@@ -134,7 +137,7 @@ public class StockService {
 
             log.debug("Stock consumed successfully - New quantity: {}", stock.getQuantity());
 
-            saveStockHistory(store.getId(), productId, -stockDto.getQuantity(), stockDto.getReason());
+            saveStockHistory(store.getId(),stock.getId(), productId, -stockDto.getQuantity(), stockDto.getReason());
 
             log.info("Successfully consumed stock - StoreId: {}, ProductId: {}, Quantity consumed: {}, Remaining: {}, Reason: {}",
                     stockDto.getStoreId(), stockDto.getProductId(), stockDto.getQuantity(),
@@ -144,6 +147,12 @@ public class StockService {
     public List<Stock> getStocksByStoreId(UUID storeId) {
         log.info("Fetching stock ");
         return stockRepository.findByStoreId(storeId).orElseThrow();
+    }
+
+    public Page<Stock> getStocksByStoreIdPaginated(UUID storeId, Pageable pageable) {
+        log.info("Fetching stocks for store: {} with pagination - Page: {}, Size: {}, Sort: {}",
+                storeId, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        return stockRepository.findByStoreId(storeId, pageable);
     }
 
     public List<List<Stock>> getProductsWithStore(List<UUID> productIds) {
