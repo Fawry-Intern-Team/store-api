@@ -69,6 +69,8 @@
 			<artifactId>spring-rabbit-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- saga events -->
 		<dependency>
 			<groupId>org.example</groupId>
 			<artifactId>saga-events</artifactId>
