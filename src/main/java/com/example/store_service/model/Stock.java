@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -22,12 +23,16 @@ public class Stock {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @NotNull(message = "Store is required")
-    private UUID storeId;
+    @ManyToOne
+    @JoinColumn(name = "storeId", nullable = false)
+    private Store store;
 
     @NotNull(message = "Product ID is required")
     private UUID productId;
 
     @Min(value = 0, message = "Quantity must be zero or more")
     private int quantity;
+
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
+    private List<StockHistory> historyList;
 }
