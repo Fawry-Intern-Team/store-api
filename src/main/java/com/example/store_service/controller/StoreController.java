@@ -26,13 +26,13 @@ public class StoreController {
         return ResponseEntity.ok(storeService.getStoreById(id));
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
+
     @PostMapping("/create")
     public ResponseEntity<Store> createStore(@RequestBody @Valid Store store, @RequestHeader(value = "X-API-Version", defaultValue = "v1") String version){
         return ResponseEntity.ok(storeService.createStore(store));
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
+
     @GetMapping
     public ResponseEntity<List<Store>> getStores(){
         return ResponseEntity.ok(storeService.getStores());

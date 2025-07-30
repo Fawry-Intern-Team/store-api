@@ -35,6 +35,7 @@ public class StoreService {
         log.info("Starting store creation - ID: {}, Location: {}", store.getId(), store.getLocation());
 
         log.debug("Store details - Id: {}, Location: {}", store.getId(), store.getLocation());
+        store.setLocation(store.getLocation().toLowerCase());
 
         Optional<Store> existingStore = storeRepository.findByLocation(store.getLocation());
         if (existingStore.isPresent()) {
