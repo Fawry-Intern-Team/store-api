@@ -47,7 +47,7 @@ public class StockService {
         this.restTemplate = restTemplate;
     }
     public void validateProductExists(UUID productId) {
-        String productServiceUrl = "http://product-service:8081/product/" + productId;
+        String productServiceUrl = "http://product-service/product/" + productId;
         ResponseEntity<String> response = restTemplate.getForEntity(productServiceUrl, String.class);
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
@@ -159,8 +159,10 @@ public class StockService {
         List<List<Stock>> validStocks = new ArrayList<>();
 
         for (UUID productId : productIds) {
-            validateProductExists(productId); // check via REST
+//            validateProductExists(productId); // check via REST
+            System.out.println(productId);
             List<Stock> stocks = stockRepository.findStocksByProductId(productId);
+            System.out.println(stocks);
             validStocks.add(stocks); // add list (even if empty)
         }
 
